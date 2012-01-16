@@ -7,7 +7,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-public class Barracade {
+public class Barricade {
 	
 	// Structure commands
 	private BodyDef def;
@@ -17,7 +17,7 @@ public class Barracade {
 	// Final body
 	private Body body;
 	
-	public Barracade(float x, float y, World world) {
+	public Barricade(float x, float y, World world) {
 		// Define the box's shape
 		shape = new PolygonShape();
 		shape.setAsBox(0.5f, 0.5f);

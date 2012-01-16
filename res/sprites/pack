@@ -1,0 +1,12 @@
+
+raw1.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+player-standing
+  rotate: false
+  xy: 2, 2
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
