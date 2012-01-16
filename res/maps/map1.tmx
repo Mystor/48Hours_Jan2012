@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><map height="30" orientation="orthogonal" tileheight="16" tilewidth="16" version="1.0" width="40"><properties><property name="blended tiles" value="3,4,5,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25"/></properties>
+ <tileset firstgid="1" name="tileset" spacing="1" tileheight="16" tilewidth="16">
+  <image height="85" source="tileset.png" width="85"/>
+ </tileset>
+ <layer height="30" name="Background" width="40">
+  <data compression="gzip" encoding="base64">
+   H4sIAAAAAAAAC+3QMQoAIBADwdz9/9G2gqWHCbLFtGFJSSoAMOiABvroS/VbX28S+1533u7Td0rqc/9Pn78BADBvAXyYYH3AEgAA
+  </data>
+ </layer>
+ <layer height="30" name="Obsticles" width="40">
+  <data compression="gzip" encoding="base64">
+   H4sIAAAAAAAAC+3OsQkAAAjAMMH/f3Z3FUEhge6NAACA37J1mb+Z638A7Cijdsp+wBIAAA==
+  </data>
+ </layer>
+</map>

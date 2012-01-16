@@ -1,0 +1,1 @@
+java -jar MapPacker.jar ..\raw\ ..\
