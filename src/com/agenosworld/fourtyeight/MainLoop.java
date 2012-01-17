@@ -3,6 +3,7 @@ package com.agenosworld.fourtyeight;
 import com.agenosworld.basicgdxgame.Disposer;
 import com.agenosworld.basicgdxgame.InputManager;
 import com.agenosworld.basicgdxgame.Updater;
+import com.agenosworld.fourtyeight.game.GameWorld;
 import com.agenosworld.fourtyeight.spritemanager.SpriteManager;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
