@@ -10,3 +10,17 @@ player-standing
   orig: 16, 16
   offset: 0, 0
   index: -1
+rocket
+  rotate: false
+  xy: 20, 2
+  size: 5, 11
+  orig: 5, 11
+  offset: 0, 0
+  index: -1
+smoke
+  rotate: false
+  xy: 2, 20
+  size: 10, 10
+  orig: 10, 10
+  offset: 0, 0
+  index: -1

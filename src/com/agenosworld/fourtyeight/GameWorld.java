@@ -71,6 +71,9 @@ public class GameWorld implements Updatable, Disposable {
 		Vector2 gravity = new Vector2(0,0);
 		b2dWorld = new World(gravity, true);
 		
+		// Register the ContactManager
+		ContactManager.registerManager(new ContactManager(), b2dWorld);
+		
 		// Create outer borders to prevent players from exiting map
 		generateWorldBorder(map.width, map.height, 1, b2dWorld);
 		
@@ -94,7 +97,7 @@ public class GameWorld implements Updatable, Disposable {
 		// TODO: Add dynamic, mobile barriers
 		
 		// TODO: Debug code for viewing Box2d viewpoints
-		b2dDebug = new Box2DDebugRenderer(true, true, false);
+//		b2dDebug = new Box2DDebugRenderer(true, true, false);
 	}
 	
 	private void generateWorldBorder(float worldWidth, float worldHeight, float borderWidth, World world) {

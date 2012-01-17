@@ -1,5 +1,6 @@
 package com.agenosworld.fourtyeight;
 
+import com.agenosworld.basicgdxgame.Disposer;
 import com.agenosworld.basicgdxgame.InputManager;
 import com.agenosworld.basicgdxgame.Updater;
 import com.agenosworld.fourtyeight.spritemanager.SpriteManager;
@@ -46,6 +47,9 @@ public class MainLoop implements ApplicationListener {
 
 	@Override
 	public void render() {
+		// Dispose of things which must be disposed of
+		Disposer.update();
+		
 		// Update all updatables
 		Updater.update();
 		
@@ -97,7 +101,7 @@ public class MainLoop implements ApplicationListener {
 		
         // Create the LwjglFrame and prevent it from resizing
 		try {
-			LwjglFrame lwjglFrame = new LwjglFrame(new MainLoop(), "48 Hours", 640, 480, false);
+			LwjglFrame lwjglFrame = new LwjglFrame(new MainLoop(), "48 Hours", 640*2, 480*2, false);
 			lwjglFrame.setResizable(false);
 		} catch (Exception e) {
 			e.printStackTrace();

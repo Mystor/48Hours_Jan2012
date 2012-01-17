@@ -1,0 +1,157 @@
+package com.agenosworld.fourtyeight;
+
+import com.agenosworld.basicgdxgame.Disposer;
+import com.agenosworld.basicgdxgame.Drawable;
+import com.agenosworld.fourtyeight.spritemanager.SpriteManager;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Manifold;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Disposable;
+
+public class Bullet implements ContactListener, Drawable, Disposable {
+	
+	// Static values
+	private final float width = 5f*CameraManager.RATIO;
+	private final float height = 11f*CameraManager.RATIO;
+	private final float renderWidth = 5f*CameraManager.RATIO;
+	private final float renderHeight = height;
+	private final float bulletSpeed = 15f;
+	
+	// Body definition values
+	private BodyDef def;
+	private PolygonShape shape;
+	private FixtureDef fixtureDef;
+	
+	// B2d Values
+	private Body body;
+	private Fixture fixture;
+	private World world;
+	
+	// Positioning values
+	private Vector2 position;
+	private float angle;
+	
+	// Visual definition values
+	private AtlasRegion main_appearance;
+	
+	// Activity values
+	private BulletEmitter owner;
+	
+	public Bullet(Vector2 origin, float firingAngle, BulletEmitter emitter, World world) {
+		position = new Vector2(origin);
+		angle = firingAngle;
+		owner = emitter;
+		this.world = world;
+		
+		// Define the physics properties of the bullet
+		def = new BodyDef();
+		def.angle = firingAngle*MathUtils.degreesToRadians;
+		def.position.set(position);
+		def.bullet = true;
+		def.type = BodyDef.BodyType.DynamicBody;
+//		def.angularVelocity = bulletSpeed;
+		
+		// Determine the velocity of the bullet
+		Vector2 bulletVelocity = new Vector2(bulletSpeed, 0);
+		bulletVelocity.rotate(firingAngle);
+		def.linearVelocity.set(bulletVelocity);
+		
+		
+		// Define the shape
+		shape = new PolygonShape();
+		shape.setAsBox(height/2,width/2);
+		
+		// Define the fixture
+		fixtureDef = new FixtureDef();
+		fixtureDef.shape = shape;
+		fixtureDef.density = 0.001f;
+		fixtureDef.isSensor = true;
+		
+		// Add the bullet to the world
+		body = world.createBody(def);
+		fixture = body.createFixture(fixtureDef);
+		
+		// Load the visuals for the bullet
+		main_appearance = SpriteManager.getRegion("rocket");
+		
+	}
+	
+	/**
+	 * 
+	 * @param contact
+	 * @param fixtureA whether or not the object which is hit is fixture A
+	 */
+	private void bulletHit(Contact contact, boolean fixtureA) {
+	}
+
+	@Override
+	public void draw(SpriteBatch batch) {
+		// Update the position of the bullet as well as its orientation
+		position.set(body.getPosition());
+		angle = body.getAngle()*MathUtils.radiansToDegrees;
+		
+		// Draw the main visual onto the screen
+		float drawX = position.x-renderHeight/2f;
+		float drawY = position.y-renderWidth/2f;
+		float originX = renderWidth/2f;
+		float originY = renderHeight/2f;
+		float angle = this.angle;
+
+		batch.draw(main_appearance, drawX, drawY, originY, originX, height, width, 1, 1, angle, true);
+		// Draw the bullet
+//		batch.draw(main_appearance, position.x-renderWidth/2, position.y-renderHeight/2, renderWidth/2, renderHeight/2, renderHeight, renderWidth, 1, 1, angle, true);
+	}
+	
+	@Override
+	public void beginContact(Contact contact) {
+		if (contact.getFixtureA() == this.fixture) {
+			if (contact.getFixtureB() != owner.getFixture()) {
+				bulletHit(contact, false);
+				Disposer.queueForDisposal(this);
+			}
+		} else if (contact.getFixtureB() == this.fixture) {
+			if (contact.getFixtureA() != owner.getFixture()) {
+				bulletHit(contact, true);
+				Disposer.queueForDisposal(this);
+			}
+		}
+		return;
+	}
+
+	private int disposeCount = 0;
+	
+	@Override
+	public void dispose() {
+		disposeCount++;
+		if (disposeCount > 1)
+			return;
+		ContactManager.remInputProcessor(this);
+		world.destroyBody(body);
+		owner.destroyBullet(this);
+	}
+
+	@Override
+	public void endContact(Contact contact) {
+	}
+
+	@Override
+	public void preSolve(Contact contact, Manifold oldManifold) {
+	}
+
+	@Override
+	public void postSolve(Contact contact, ContactImpulse impulse) {
+	}
+
+
+}
