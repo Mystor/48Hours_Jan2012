@@ -120,7 +120,7 @@ public class GameWorld implements Updatable, Disposable {
 		}
 		
 		// TODO: Debug code for viewing Box2d viewpoints
-//		b2dDebug = new Box2DDebugRenderer(true, true, false);
+		b2dDebug = new Box2DDebugRenderer(true, true, false);
 	}
 	
 	private void generateWorldBorder(float worldWidth, float worldHeight, float borderWidth, World world) {

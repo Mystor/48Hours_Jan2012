@@ -1,101 +1,68 @@
 package com.agenosworld.fourtyeight;
 
-import java.util.ArrayList;
-
-import com.agenosworld.basicgdxgame.Drawable;
-import com.agenosworld.basicgdxgame.Updatable;
 import com.agenosworld.fourtyeight.spritemanager.SpriteManager;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.World;
 
-public class Player implements InputProcessor, Updatable, Drawable, BulletEmitter {
-	
-	// Shape values
-	private float width = 16f*CameraManager.RATIO;
-	private float height = 16f*CameraManager.RATIO;
-	private float radius = 8f*CameraManager.RATIO;
-	
-	// Box2d Definition values
-	private BodyDef def;
-	private CircleShape shape;
-	private FixtureDef fixtureDef;
-	
-	// Box2d values
-	private Body body;
-	private Fixture fixture;
-	private World world;
-	
-	// Visual properties
-	private AtlasRegion visual_main;
+public class Player extends Unit implements InputProcessor {
+
+	// Camera Manager
 	private CameraManager cameraManager;
-	
-	// Location and facing properties
-	private Vector2 position;
-	private Vector2 facing;
+
+	// Mouse Position storage
 	private Vector2 mousePosition = new Vector2();
 	
 	// Movement variables
 	private boolean movingUp = false, movingDown = false, movingLeft=false, movingRight=false;
 	
-	// Bullet management variables
-	private GameWorld gameWorld;
-	private ArrayList<Bullet> activeBullets = new ArrayList<Bullet> ();
-	
 	// Constructor
 	public Player(float x, float y, GameWorld world) {
-		// Get the b2dWorld and CameraManager
-		this.gameWorld = world;
-		this.world = world.getB2dWorld();
-		this.cameraManager = world.getCameraManager();
-		
-		// Define position
-		position = new Vector2(x, y);
-		facing = new Vector2(1, 0);
-		
+		super(x, y, world);
+		cameraManager = world.getCameraManager();
+	}
+	
+	// Load the main visual for the player and set the width/height attributes
+	@Override
+	protected AtlasRegion getMainVisual() {
+		width = 16f*CameraManager.RATIO;
+		height = 16f*CameraManager.RATIO;
+		return SpriteManager.getRegion("player-standing");
+	}
+
+	// Create the B2DDefinitions required to create the unit object in space
+	@Override
+	protected void createB2DDefinitions() {
 		// Create the definitions for Box2d
 		// Shape
 		shape = new CircleShape();
-		shape.setRadius(radius-(2f*CameraManager.RATIO)); // Slightly modified radius
-//		shape.setPosition(position);
-		
+		shape.setRadius(8f*CameraManager.RATIO-(2f*CameraManager.RATIO)); // Slightly modified radius
+
 		// Definition
 		def = new BodyDef();
 		def.type = BodyType.DynamicBody; // Object is affected by forces
 		def.position.set(position);
 		def.fixedRotation = true;
 		def.linearDamping = 5f;
-		
+
 		// Define the body's fixture
 		fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
 		fixtureDef.friction = 0.5f;
 		fixtureDef.density = 1.0f;
-		
-		// Create the body in the world
-		body = this.world.createBody(def);
-		fixture = body.createFixture(fixtureDef);
-		
-		// Obtain the image representation for the player
-		visual_main = SpriteManager.getRegion("player-standing");
 	}
 	
 	// Update functions - connecting object to the b2dWorld
 	@Override
 	public void update(float delta) {
-		// Apply Movement FOrces
+		// Apply Movement Forces
 		Vector2 movementForce = new Vector2();
 		if (movingUp)
 			movementForce.y+=15f;
@@ -120,24 +87,7 @@ public class Player implements InputProcessor, Updatable, Drawable, BulletEmitte
 		updateFacing();
 		
 		// Update the position to that of the body in the b2dWorld
-		this.position.set(body.getPosition());
-	}
-	
-	@Override
-	public void draw(SpriteBatch batch) {
-		// Draw all active bullets
-		for (Bullet b : activeBullets) {
-			b.draw(batch);
-		}
-		
-		// Draw the main visual onto the screen
-		float drawX = position.x-width/2f;
-		float drawY = position.y-height/2f;
-		float originX = width/2f;
-		float originY = height/2f;
-		float angle = facing.angle();
-		
-		batch.draw(visual_main, drawX, drawY, originX, originY, width, height, 1, 1, angle, true);
+		super.update(delta);
 	}
 	
 	public void updateFacing() {
@@ -212,10 +162,7 @@ public class Player implements InputProcessor, Updatable, Drawable, BulletEmitte
 	}
 	@Override
 	public boolean touchDown(int x, int y, int pointer, int button) {
-		// TODO: FInish bullet emitting code
-		Bullet newBullet = new Bullet(new Vector2(position), facing.angle(), this, world);
-		ContactManager.addContactListener(newBullet);
-		activeBullets.add(newBullet);
+		fireBullet();
 		return false;
 	}
 	@Override
@@ -228,21 +175,6 @@ public class Player implements InputProcessor, Updatable, Drawable, BulletEmitte
 	public boolean scrolled(int amount) {
 		
 		return false;
-	}
-
-	@Override
-	public Fixture getFixture() {
-		return fixture;
-	}
-
-	@Override
-	public void destroyBullet(Bullet b) {
-		activeBullets.remove(b);
-	}
-
-	@Override
-	public GameWorld getGameWorld() {
-		return gameWorld;
 	}
 
 }

@@ -22,10 +22,10 @@ import com.badlogic.gdx.utils.Disposable;
 public class Bullet implements ContactListener, Drawable, Disposable {
 	
 	// Static values
-	private final float width = 5f*CameraManager.RATIO;
-	private final float height = 11f*CameraManager.RATIO;
-	private final float renderWidth = 5f*CameraManager.RATIO;
-	private final float renderHeight = height;
+	private final float height = 3f*CameraManager.RATIO;
+	private final float width = 11f*CameraManager.RATIO;
+	private final float renderHeight = 5f*CameraManager.RATIO;
+	private final float renderWidth = width;
 	private final float bulletSpeed = 15f;
 	
 	// Body definition values
@@ -70,7 +70,7 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 		
 		// Define the shape
 		shape = new PolygonShape();
-		shape.setAsBox(height/2,width/2);
+		shape.setAsBox(width/2, height/2);
 		
 		// Define the fixture
 		fixtureDef = new FixtureDef();
@@ -109,13 +109,13 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 		}
 		if (foundProp != null) {
 			System.out.println("applyin da forces");
-			// Apply forces
+			// Apply Impulse
 			Vector2 fpPosition = foundProp.getBody().getPosition();
 			
 			Vector2 forceDirection = new Vector2(foundProp.getBody().getPosition());
 			forceDirection.add(-position.x, -position.y);
 			
-			Vector2 forceMagnitude = new Vector2(foundProp.getBody().getMass()*bulletSpeed*.3f, 0f);
+			Vector2 forceMagnitude = new Vector2(foundProp.getBody().getMass()*bulletSpeed*.1f, 0f);
 			forceMagnitude.rotate(forceDirection.angle());
 			
 			Vector2 forceLocation = new Vector2((position.x + fpPosition.x)/2, (position.y + fpPosition.y)/2);
@@ -134,15 +134,13 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 		angle = body.getAngle()*MathUtils.radiansToDegrees;
 		
 		// Draw the main visual onto the screen
-		float drawX = position.x-renderHeight/2f;
-		float drawY = position.y-renderWidth/2f;
+		float drawX = position.x-renderWidth/2f;
+		float drawY = position.y-renderHeight/2f/*+1*CameraManager.RATIO*/;
 		float originX = renderWidth/2f;
-		float originY = renderHeight/2f;
+		float originY = renderHeight/2f/* - 1*CameraManager.RATIO*/;
 		float angle = this.angle;
 
-		batch.draw(main_appearance, drawX, drawY, originY, originX, height, width, 1, 1, angle, true);
-		// Draw the bullet
-//		batch.draw(main_appearance, position.x-renderWidth/2, position.y-renderHeight/2, renderWidth/2, renderHeight/2, renderHeight, renderWidth, 1, 1, angle, true);
+		batch.draw(main_appearance, drawX, drawY, originX, originY, renderWidth, renderHeight, 1, 1, angle, true);
 	}
 	
 	@Override
