@@ -75,7 +75,7 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 		// Define the fixture
 		fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
-		fixtureDef.density = 0.001f;
+		fixtureDef.density = 0.1f;
 		fixtureDef.isSensor = true;
 		
 		// Add the bullet to the world
@@ -93,6 +93,38 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 	 * @param fixtureA whether or not the object which is hit is fixture A
 	 */
 	private void bulletHit(Contact contact, boolean fixtureA) {
+		// Get the hit fixture
+		Fixture hit;
+		if (fixtureA) {
+			hit = contact.getFixtureA();
+		} else {
+			hit = contact.getFixtureB();
+		}
+		
+		PhysicsProp foundProp = null;
+		// CHeck if its a PhysicsProp
+		for (PhysicsProp p : owner.getGameWorld().physicsProps) {
+			if (p.getFixture() == hit)
+				foundProp = p;
+		}
+		if (foundProp != null) {
+			System.out.println("applyin da forces");
+			// Apply forces
+			Vector2 fpPosition = foundProp.getBody().getPosition();
+			
+			Vector2 forceDirection = new Vector2(foundProp.getBody().getPosition());
+			forceDirection.add(-position.x, -position.y);
+			
+			Vector2 forceMagnitude = new Vector2(foundProp.getBody().getMass()*bulletSpeed*.3f, 0f);
+			forceMagnitude.rotate(forceDirection.angle());
+			
+			Vector2 forceLocation = new Vector2((position.x + fpPosition.x)/2, (position.y + fpPosition.y)/2);
+			
+			System.out.println(forceMagnitude + " " + forceLocation);
+			
+			foundProp.getBody().applyLinearImpulse(forceMagnitude, forceLocation);
+		}
+		
 	}
 
 	@Override
@@ -136,7 +168,7 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 		disposeCount++;
 		if (disposeCount > 1)
 			return;
-		ContactManager.remInputProcessor(this);
+		ContactManager.remContactListener(this);
 		world.destroyBody(body);
 		owner.destroyBullet(this);
 	}

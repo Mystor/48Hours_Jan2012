@@ -51,11 +51,13 @@ public class Player implements InputProcessor, Updatable, Drawable, BulletEmitte
 	private boolean movingUp = false, movingDown = false, movingLeft=false, movingRight=false;
 	
 	// Bullet management variables
+	private GameWorld gameWorld;
 	private ArrayList<Bullet> activeBullets = new ArrayList<Bullet> ();
 	
 	// Constructor
 	public Player(float x, float y, GameWorld world) {
 		// Get the b2dWorld and CameraManager
+		this.gameWorld = world;
 		this.world = world.getB2dWorld();
 		this.cameraManager = world.getCameraManager();
 		
@@ -212,7 +214,7 @@ public class Player implements InputProcessor, Updatable, Drawable, BulletEmitte
 	public boolean touchDown(int x, int y, int pointer, int button) {
 		// TODO: FInish bullet emitting code
 		Bullet newBullet = new Bullet(new Vector2(position), facing.angle(), this, world);
-		ContactManager.addInputProcessor(newBullet);
+		ContactManager.addContactListener(newBullet);
 		activeBullets.add(newBullet);
 		return false;
 	}
@@ -236,6 +238,11 @@ public class Player implements InputProcessor, Updatable, Drawable, BulletEmitte
 	@Override
 	public void destroyBullet(Bullet b) {
 		activeBullets.remove(b);
+	}
+
+	@Override
+	public GameWorld getGameWorld() {
+		return gameWorld;
 	}
 
 }

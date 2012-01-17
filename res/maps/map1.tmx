@@ -1,15 +1,25 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><map height="30" orientation="orthogonal" tileheight="16" tilewidth="16" version="1.0" width="40"><properties><property name="blended tiles" value="3,4,5,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25"/></properties>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><map height="30" orientation="orthogonal" tileheight="16" tilewidth="16" version="1.0" width="40"><properties><property name="blended tiles" value="5,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25"/></properties>
  <tileset firstgid="1" name="tileset" spacing="1" tileheight="16" tilewidth="16">
   <image height="85" source="tileset.png" width="85"/>
  </tileset>
  <layer height="30" name="Background" width="40">
   <data compression="gzip" encoding="base64">
-   H4sIAAAAAAAAC+3QMQoAIBADwdz9/9G2gqWHCbLFtGFJSSoAMOiABvroS/VbX28S+1533u7Td0rqc/9Pn78BADBvAXyYYH3AEgAA
+   H4sIAAAAAAAAC+3YoREAMAwDMeey/85doSwGAs+Ff5JMeVsaHx8fH19nfHx8fHyd8fHx8fF1dv19fnppnQptwBIAAA==
   </data>
  </layer>
  <layer height="30" name="Obsticles" width="40">
   <data compression="gzip" encoding="base64">
-   H4sIAAAAAAAAC+3OsQkAAAjAMMH/f3Z3FUEhge6NAACA37J1mb+Z638A7Cijdsp+wBIAAA==
+   H4sIAAAAAAAAC+2VwQrAIAxDPfj/37zrDm5JbFnrSMCDGNJHqTpGf82m686H+N/2yL/jMx/W13yr2VFyn87YPFaoLroL6v3I5lMzsvnYuqwva97VuqzPfHrW3/iYf7KKL6Oe6jdfbB6q+reTa75YrvliuZH3t7p/3fmUnEyZL6bT5q/jOkEXY+HmucASAAA=
+  </data>
+ </layer>
+ <layer height="30" name="Enemies" width="40">
+  <data compression="gzip" encoding="base64">
+   H4sIAAAAAAAAC+3VQQoAIAhEUS/h/a/aCcyFTmj8t4kWEg3CmGELb57P7t3vT/HLPwAAeurO8OB8iV6E2m3H2L8cGdWQX40qvwn9h30OxK+pT8ASAAA=
+  </data>
+ </layer>
+ <layer height="30" name="PhysicsObjects" width="40">
+  <data compression="gzip" encoding="base64">
+   H4sIAAAAAAAAC+3WsQoAIAhF0Xb//3+jNVoKiVveswgN+nSqNWWKzffTGZn9VFNMVXeR707ONtDzZau2r6Q3UP+j5uIi7k/M9Cvqram5tNYBV6VlPMASAAA=
   </data>
  </layer>
 </map>

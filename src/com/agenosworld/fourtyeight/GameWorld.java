@@ -1,5 +1,7 @@
 package com.agenosworld.fourtyeight;
 
+import java.util.ArrayList;
+
 import com.agenosworld.basicgdxgame.InputManager;
 import com.agenosworld.basicgdxgame.Updatable;
 import com.agenosworld.basicgdxgame.Updater;
@@ -36,6 +38,9 @@ public class GameWorld implements Updatable, Disposable {
 	// Player
 	private Player player;
 	
+	// PhysicsProp ArrayList
+	public ArrayList<PhysicsProp> physicsProps;
+	
 	public GameWorld() {
 		// Create the camera manager
 		manager = new CameraManager(30.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -47,7 +52,7 @@ public class GameWorld implements Updatable, Disposable {
 		setupB2DWorld();
 		
 		// Create the player
-		player = new Player(3.5f, 5.5f, this);
+		player = new Player(4.5f, 4.5f, this);
 		Updater.addUpdatable(player);
 		InputManager.addInputProcessor(player);
 	}
@@ -87,14 +92,32 @@ public class GameWorld implements Updatable, Disposable {
 			for (int x=0; x<fixedBarriers[mapY].length; x++) {
 				int currID= fixedBarriers[mapY][x];
 				
-				if (currID != 0) {
+				if (currID != 0)
 					new Barricade(x, y, b2dWorld);
-					System.out.println("Created barracade at " + x + " " + y);
-				}
 			}
 		}
 		
 		// TODO: Add dynamic, mobile barriers
+		int[][] mobileBarriers = map.layers.get(3).tiles;
+		
+		// Define the PhysicsProps array
+		physicsProps = new ArrayList<PhysicsProp>();
+		
+		// Populate the world with PhysicsProps
+		for (int mapY=0; mapY<mobileBarriers.length; mapY++) {
+			// Find the y position where the map tile will ACTUALLY be rendered
+			int y = mobileBarriers.length-mapY-1;
+			
+			for (int x=0; x<mobileBarriers[mapY].length; x++) {
+				int currID = mobileBarriers[mapY][x];
+				
+				if (currID != 0) {
+					System.out.println("creating new " + map.getTileProperty(currID, "barricadeType"));
+					PhysicsProp prop = new PhysicsProp(x, y, b2dWorld, /*map.getTileProperty(currID, "barricadeType")*/ "0");
+					physicsProps.add(prop);
+				}
+			}
+		}
 		
 		// TODO: Debug code for viewing Box2d viewpoints
 //		b2dDebug = new Box2DDebugRenderer(true, true, false);
@@ -148,6 +171,11 @@ public class GameWorld implements Updatable, Disposable {
 		SpriteBatch batch = manager.getSpriteBatch();
 		batch.begin();
 		player.draw(batch);
+		
+		// Draw the physics props
+		for (PhysicsProp p : physicsProps) {
+			p.draw(batch);
+		}
 		batch.end();
 		
 		// Render the debug for the B2Dworld

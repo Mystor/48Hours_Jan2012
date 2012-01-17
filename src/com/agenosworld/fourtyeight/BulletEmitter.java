@@ -7,5 +7,7 @@ public interface BulletEmitter {
 	public Fixture getFixture();
 	
 	public void destroyBullet(Bullet b);
+	
+	public GameWorld getGameWorld();
 
 }

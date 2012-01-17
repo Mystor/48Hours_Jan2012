@@ -3,23 +3,44 @@ raw1.png
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-player-standing
+target
   rotate: false
   xy: 2, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+player-standing
+  rotate: false
+  xy: 36, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
+enemy-turret
+  rotate: false
+  xy: 2, 36
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+barrel
+  rotate: false
+  xy: 36, 20
+  size: 14, 14
+  orig: 14, 14
+  offset: 0, 0
+  index: -1
 rocket
   rotate: false
-  xy: 20, 2
+  xy: 54, 2
   size: 5, 11
   orig: 5, 11
   offset: 0, 0
   index: -1
 smoke
   rotate: false
-  xy: 2, 20
+  xy: 52, 20
   size: 10, 10
   orig: 10, 10
   offset: 0, 0

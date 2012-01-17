@@ -14,15 +14,15 @@ public class ContactManager implements ContactListener {
 
 	private static ContactManager manager;
 
-	public static void addInputProcessor(ContactListener p) {
+	public static void addContactListener(ContactListener p) {
 		processors.add(p);
 	}
 
-	public static void remInputProcessor(ContactListener p) {
+	public static void remContactListener(ContactListener p) {
 		processors.remove(p);
 	}
 
-	public static void isProcessing(ContactListener p) {
+	public static void isListening(ContactListener p) {
 		processors.contains(p);
 	}
 
@@ -35,9 +35,7 @@ public class ContactManager implements ContactListener {
 		return manager;
 	}
 
-	public ContactManager() {
-
-	}
+	public ContactManager() { }
 
 	@Override
 	public void beginContact(Contact contact) {

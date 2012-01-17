@@ -101,7 +101,7 @@ public class MainLoop implements ApplicationListener {
 		
         // Create the LwjglFrame and prevent it from resizing
 		try {
-			LwjglFrame lwjglFrame = new LwjglFrame(new MainLoop(), "48 Hours", 640*2, 480*2, false);
+			LwjglFrame lwjglFrame = new LwjglFrame(new MainLoop(), "48 Hours", 640, 480, false);
 			lwjglFrame.setResizable(false);
 		} catch (Exception e) {
 			e.printStackTrace();
