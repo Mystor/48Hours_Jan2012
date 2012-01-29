@@ -1,9 +1,9 @@
 package com.agenosworld.fourtyeight.game.units;
 
-import java.util.ArrayList;
-
+import com.agenosworld.basicgdxgame.Disposer;
 import com.agenosworld.basicgdxgame.Drawable;
 import com.agenosworld.basicgdxgame.Updatable;
+import com.agenosworld.basicgdxgame.Updater;
 import com.agenosworld.fourtyeight.game.Bullet;
 import com.agenosworld.fourtyeight.game.BulletEmitter;
 import com.agenosworld.fourtyeight.game.ContactManager;
@@ -17,8 +17,9 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Disposable;
 
-public abstract class Unit implements Updatable, Drawable, BulletEmitter {
+public abstract class Unit implements Updatable, Drawable, BulletEmitter, Disposable {
 	
 	// Shape values
 	protected float width;
@@ -43,7 +44,11 @@ public abstract class Unit implements Updatable, Drawable, BulletEmitter {
 
 	// Bullet management variables
 	protected GameWorld gameWorld;
-	protected ArrayList<Bullet> activeBullets = new ArrayList<Bullet> ();
+	
+	// Health and well being variables
+	protected float maxHealth;
+	protected float health;
+	protected HealthBar healthbar;
 	
 	// Constructor
 	public Unit(float x, float y, GameWorld world) {
@@ -64,12 +69,15 @@ public abstract class Unit implements Updatable, Drawable, BulletEmitter {
 		
 		// Obtain a visual representation for the player
 		visual_main = getMainVisual();
+		
+		// Load a healthbar
+		healthbar = new HealthBar(this);
 	}
 	
 	protected void fireBullet() {
 		Bullet newBullet = new Bullet(new Vector2(position), facing.angle(), this, world);
 		ContactManager.addContactListener(newBullet);
-		activeBullets.add(newBullet);
+		gameWorld.bullets.add(newBullet);
 	}
 	
 	// Abstract functions
@@ -78,11 +86,6 @@ public abstract class Unit implements Updatable, Drawable, BulletEmitter {
 
 	@Override
 	public void draw(SpriteBatch batch) {
-		// Draw all active bullets
-		for (Bullet b : activeBullets) {
-			b.draw(batch);
-		}
-
 		// Draw the main visual onto the screen
 		float drawX = position.x-width/2f;
 		float drawY = position.y-height/2f;
@@ -91,16 +94,38 @@ public abstract class Unit implements Updatable, Drawable, BulletEmitter {
 		float angle = facing.angle();
 
 		batch.draw(visual_main, drawX, drawY, originX, originY, width, height, 1, 1, angle, true);
+		
+		// Draw the health bar
+		healthbar.draw(batch);
 	}
 
 	@Override
 	public void update(float delta) {
 		position.set(body.getPosition());
 	}
-
+	
+	public void damage(float damage) {
+		health -= damage;
+		
+		if (health <= 0) {
+			die();
+		}
+	}
+	
+	public void die() {
+		Disposer.queueForDisposal(this);
+	}
+	
+	private int disposeCount = 0;
+	
 	@Override
-	public void destroyBullet(Bullet b) {
-		activeBullets.remove(b);
+	public void dispose() {
+		disposeCount++;
+		if (disposeCount > 1)
+			return;
+		Updater.removeUpdatable(this);
+		gameWorld.units.remove(this);
+		world.destroyBody(body);
 	}
 
 	@Override
@@ -111,6 +136,10 @@ public abstract class Unit implements Updatable, Drawable, BulletEmitter {
 	@Override
 	public Fixture getFixture() {
 		return fixture;
+	}
+
+	public Body getBody() {
+		return body;
 	}
 	
 }

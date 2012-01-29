@@ -1,6 +1,9 @@
 package com.agenosworld.fourtyeight.game.units;
 
-import com.agenosworld.fourtyeight.game.CameraManager;
+import com.agenosworld.basicgdxgame.InputManager;
+import com.agenosworld.fourtyeight.CameraManager;
+import com.agenosworld.fourtyeight.MainLoop;
+import com.agenosworld.fourtyeight.ScoreManager;
 import com.agenosworld.fourtyeight.game.GameWorld;
 import com.agenosworld.fourtyeight.spritemanager.SpriteManager;
 import com.badlogic.gdx.Input;
@@ -25,10 +28,18 @@ public class Player extends Unit implements InputProcessor {
 	// Movement variables
 	private boolean movingUp = false, movingDown = false, movingLeft=false, movingRight=false;
 	
+	// Firing values
+	private float timeSinceLastShot;
+	private float shotCooldown = .1f;
+	
 	// Constructor
 	public Player(float x, float y, GameWorld world) {
 		super(x, y, world);
 		cameraManager = world.getCameraManager();
+		
+		// Set Max HP
+		maxHealth = 80f;
+		health = 80f;
 	}
 	
 	// Load the main visual for the player and set the width/height attributes
@@ -45,7 +56,7 @@ public class Player extends Unit implements InputProcessor {
 		// Create the definitions for Box2d
 		// Shape
 		shape = new CircleShape();
-		shape.setRadius(8f*CameraManager.RATIO-(2f*CameraManager.RATIO)); // Slightly modified radius
+		shape.setRadius(6f*CameraManager.RATIO);
 
 		// Definition
 		def = new BodyDef();
@@ -57,13 +68,15 @@ public class Player extends Unit implements InputProcessor {
 		// Define the body's fixture
 		fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
-		fixtureDef.friction = 0.5f;
 		fixtureDef.density = 1.0f;
 	}
 	
 	// Update functions - connecting object to the b2dWorld
 	@Override
 	public void update(float delta) {
+		// Increment time since last shot
+		timeSinceLastShot += delta;
+		
 		// Apply Movement Forces
 		Vector2 movementForce = new Vector2();
 		if (movingUp)
@@ -96,6 +109,19 @@ public class Player extends Unit implements InputProcessor {
 		Vector2 facingAngle = new Vector2(mousePosition.x, mousePosition.y);
 		facingAngle.add(-position.x, -position.y);
 		this.facing = facingAngle;
+	}
+	
+	@Override
+	public void die() {
+		ScoreManager.registerLoss();
+		gameWorld.dispose();
+		MainLoop.nextMap = "MAIN_MENU";
+	}
+	
+	@Override
+	public void dispose() {
+		InputManager.remInputProcessor(this);
+		super.dispose();
 	}
 	
 	// Input Management Functions
@@ -156,15 +182,18 @@ public class Player extends Unit implements InputProcessor {
 	public boolean touchDragged(int x, int y, int pointer) {
 		return touchMoved(x,y); // Simply call touchMoved
 	}
+	@Override
+	public boolean touchDown(int x, int y, int pointer, int button) {
+		if (timeSinceLastShot > shotCooldown) {
+			timeSinceLastShot = 0;
+			fireBullet();
+		}
+		return true;
+	}
 	
 	@Override
 	public boolean keyTyped(char character) {
 		
-		return false;
-	}
-	@Override
-	public boolean touchDown(int x, int y, int pointer, int button) {
-		fireBullet();
 		return false;
 	}
 	@Override

@@ -1,6 +1,7 @@
 package com.agenosworld.fourtyeight.game;
 
 import com.agenosworld.basicgdxgame.Drawable;
+import com.agenosworld.fourtyeight.CameraManager;
 import com.agenosworld.fourtyeight.spritemanager.SpriteManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -65,7 +66,7 @@ public class PhysicsProp implements Drawable {
 		fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
 		fixtureDef.density = 4f;
-		fixtureDef.restitution = .1f;
+		fixtureDef.restitution = 0.01f;
 		
 		// Create the object in the physics world
 		body = world.createBody(def);

@@ -2,7 +2,13 @@ package com.agenosworld.fourtyeight.game;
 
 import com.agenosworld.basicgdxgame.Disposer;
 import com.agenosworld.basicgdxgame.Drawable;
+import com.agenosworld.fourtyeight.CameraManager;
+import com.agenosworld.fourtyeight.game.particles.EffectManager;
+import com.agenosworld.fourtyeight.game.particles.Explosion;
+import com.agenosworld.fourtyeight.game.particles.Smoke;
+import com.agenosworld.fourtyeight.game.units.Unit;
 import com.agenosworld.fourtyeight.spritemanager.SpriteManager;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -22,11 +28,14 @@ import com.badlogic.gdx.utils.Disposable;
 public class Bullet implements ContactListener, Drawable, Disposable {
 	
 	// Static values
+	private final float BULLET_SPEED = 15f;
+	private final float BULLET_DAMAGE = 10f;
+	
 	private final float height = 3f*CameraManager.RATIO;
 	private final float width = 11f*CameraManager.RATIO;
 	private final float renderHeight = 5f*CameraManager.RATIO;
 	private final float renderWidth = width;
-	private final float bulletSpeed = 15f;
+
 	
 	// Body definition values
 	private BodyDef def;
@@ -48,6 +57,10 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 	// Activity values
 	private BulletEmitter owner;
 	
+	// Smoke emitting values
+	private float timeSinceLastSmoke = 0;
+	private float smokeRate = 0.01f;
+	
 	public Bullet(Vector2 origin, float firingAngle, BulletEmitter emitter, World world) {
 		position = new Vector2(origin);
 		angle = firingAngle;
@@ -60,10 +73,9 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 		def.position.set(position);
 		def.bullet = true;
 		def.type = BodyDef.BodyType.DynamicBody;
-//		def.angularVelocity = bulletSpeed;
 		
 		// Determine the velocity of the bullet
-		Vector2 bulletVelocity = new Vector2(bulletSpeed, 0);
+		Vector2 bulletVelocity = new Vector2(BULLET_SPEED, 0);
 		bulletVelocity.rotate(firingAngle);
 		def.linearVelocity.set(bulletVelocity);
 		
@@ -108,27 +120,61 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 				foundProp = p;
 		}
 		if (foundProp != null) {
-			System.out.println("applyin da forces");
 			// Apply Impulse
-			Vector2 fpPosition = foundProp.getBody().getPosition();
-			
+			// Find the direction between the two objects
 			Vector2 forceDirection = new Vector2(foundProp.getBody().getPosition());
 			forceDirection.add(-position.x, -position.y);
 			
-			Vector2 forceMagnitude = new Vector2(foundProp.getBody().getMass()*bulletSpeed*.1f, 0f);
+			// Create a force magnitude and rotate it to align with the force direction
+			Vector2 forceMagnitude = new Vector2(foundProp.getBody().getMass()*BULLET_SPEED*.3f, 0f);
 			forceMagnitude.rotate(forceDirection.angle());
 			
-			Vector2 forceLocation = new Vector2((position.x + fpPosition.x)/2, (position.y + fpPosition.y)/2);
+			// Apply the force location at the bullet's position
+			Vector2 forceLocation = new Vector2(position);
 			
-			System.out.println(forceMagnitude + " " + forceLocation);
-			
+			// Apply the Linear Impulse
 			foundProp.getBody().applyLinearImpulse(forceMagnitude, forceLocation);
 		}
+		
+		// Check if it is a Unit
+		Unit foundUnit = null;
+		for (Unit u : owner.getGameWorld().units) {
+			if (u.getFixture() == hit)
+				foundUnit = u;
+		}
+		if (foundUnit != null) {
+			// Apply Impulse
+			// Find the direction between the two objects
+			Vector2 forceDirection = new Vector2(foundUnit.getBody().getPosition());
+			forceDirection.add(-position.x, -position.y);
+
+			// Create a force magnitude and rotate it to align with the force direction
+			Vector2 forceMagnitude = new Vector2(foundUnit.getBody().getMass()*BULLET_SPEED*.3f, 0f);
+			forceMagnitude.rotate(forceDirection.angle());
+
+			// Apply the force location at the bullet's position
+			Vector2 forceLocation = new Vector2(position);
+
+			// Apply the Linear Impulse
+			foundUnit.getBody().applyLinearImpulse(forceMagnitude, forceLocation);
+			
+			// Deal damage
+			foundUnit.damage(BULLET_DAMAGE);
+		}
+		
+		EffectManager.addEffect(new Explosion(position.x, position.y));
 		
 	}
 
 	@Override
 	public void draw(SpriteBatch batch) {
+		// smoke stuff
+		timeSinceLastSmoke += Gdx.graphics.getDeltaTime();
+		if (timeSinceLastSmoke >= smokeRate) {
+			EffectManager.addEffect(new Smoke(this.position.x, this.position.y));
+			timeSinceLastSmoke = 0;
+		}
+		
 		// Update the position of the bullet as well as its orientation
 		position.set(body.getPosition());
 		angle = body.getAngle()*MathUtils.radiansToDegrees;
@@ -168,7 +214,8 @@ public class Bullet implements ContactListener, Drawable, Disposable {
 			return;
 		ContactManager.remContactListener(this);
 		world.destroyBody(body);
-		owner.destroyBullet(this);
+		owner.getGameWorld().bullets.remove(this);
+		//owner.destroyBullet(this);
 	}
 
 	@Override

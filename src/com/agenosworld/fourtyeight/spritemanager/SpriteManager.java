@@ -41,5 +41,9 @@ public class SpriteManager {
 		List<AtlasRegion> regions = atlas.findRegions(name);
 		return regions;
 	}
+	
+	public static void dispose() {
+		atlas.dispose();
+	}
 
 }

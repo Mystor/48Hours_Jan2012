@@ -2,16 +2,21 @@ package com.agenosworld.fourtyeight.game;
 
 import java.util.ArrayList;
 
+import com.agenosworld.basicgdxgame.Disposer;
+import com.agenosworld.basicgdxgame.GameComponent;
 import com.agenosworld.basicgdxgame.InputManager;
-import com.agenosworld.basicgdxgame.Updatable;
 import com.agenosworld.basicgdxgame.Updater;
+import com.agenosworld.fourtyeight.CameraManager;
+import com.agenosworld.fourtyeight.MainLoop;
+import com.agenosworld.fourtyeight.game.particles.EffectManager;
 import com.agenosworld.fourtyeight.game.units.Player;
+import com.agenosworld.fourtyeight.game.units.Turret;
+import com.agenosworld.fourtyeight.game.units.Unit;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.tiled.TileAtlas;
 import com.badlogic.gdx.graphics.g2d.tiled.TileMapRenderer;
-import com.badlogic.gdx.graphics.g2d.tiled.TiledLoader;
 import com.badlogic.gdx.graphics.g2d.tiled.TiledMap;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -20,9 +25,8 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.utils.Disposable;
 
-public class GameWorld implements Updatable, Disposable {
+public class GameWorld implements GameComponent {
 	
 	// Box2d Variables
 	private World b2dWorld;
@@ -42,7 +46,20 @@ public class GameWorld implements Updatable, Disposable {
 	// PhysicsProp ArrayList
 	public ArrayList<PhysicsProp> physicsProps;
 	
-	public GameWorld() {
+	// Units ArrayList
+	public ArrayList<Unit> units;
+	
+	// Bullets ArrayList
+	public ArrayList<Bullet> bullets;
+	
+	// Goal object
+	private Goal goal;
+	
+	public GameWorld(TiledMap tiledMap, TileAtlas atlas) {
+		// Set the map and mapAtlas fields
+		map = tiledMap;
+		mapAtlas = atlas;
+		
 		// Create the camera manager
 		manager = new CameraManager(30.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		
@@ -52,23 +69,22 @@ public class GameWorld implements Updatable, Disposable {
 		//Setup the Box2d world based on the data loaded by the TiledMap
 		setupB2DWorld();
 		
-		// Create the player
-		player = new Player(4.5f, 4.5f, this);
-		Updater.addUpdatable(player);
-		InputManager.addInputProcessor(player);
+		// Instantiate the bullets ArrayList
+		bullets = new ArrayList<Bullet>();
 	}
 	
 	public World getB2dWorld() {
 		return b2dWorld;
 	}
 	
+	@Override
 	public CameraManager getCameraManager() {
 		return manager;
 	}
 
 	private void setupTiledMap() {
-		map = TiledLoader.createMap(Gdx.files.internal("res/maps/map1.tmx"));
-		mapAtlas = new TileAtlas(map, Gdx.files.internal("res/maps/"));
+//		map = TiledLoader.createMap(Gdx.files.internal("res/maps/map1.tmx"));
+//		mapAtlas = new TileAtlas(map, Gdx.files.internal("res/maps/"));
 		mapRenderer = new TileMapRenderer(map, mapAtlas, 16, 16, 1, 1);
 	}
 	
@@ -80,6 +96,15 @@ public class GameWorld implements Updatable, Disposable {
 		// Register the ContactManager
 		ContactManager.registerManager(new ContactManager(), b2dWorld);
 		
+		// Define the Units array
+		units = new ArrayList<Unit>();
+		
+		// Create the player
+		player = new Player(4.5f, 4.5f, this);
+		Updater.addUpdatable(player);
+		InputManager.addInputProcessor(player);
+		units.add(player);
+		
 		// Create outer borders to prevent players from exiting map
 		generateWorldBorder(map.width, map.height, 1, b2dWorld);
 		
@@ -87,6 +112,7 @@ public class GameWorld implements Updatable, Disposable {
 		int[][] fixedBarriers = map.layers.get(1).tiles;
 		
 		for (int mapY=0; mapY<fixedBarriers.length; mapY++) {
+			
 			// Find the y position where the map tile will ACTUALLY be rendered
 			int y = fixedBarriers.length-mapY-1;
 			
@@ -98,7 +124,7 @@ public class GameWorld implements Updatable, Disposable {
 			}
 		}
 		
-		// TODO: Add dynamic, mobile barriers
+		// Add dynamic, mobile barriers
 		int[][] mobileBarriers = map.layers.get(3).tiles;
 		
 		// Define the PhysicsProps array
@@ -106,6 +132,7 @@ public class GameWorld implements Updatable, Disposable {
 		
 		// Populate the world with PhysicsProps
 		for (int mapY=0; mapY<mobileBarriers.length; mapY++) {
+			
 			// Find the y position where the map tile will ACTUALLY be rendered
 			int y = mobileBarriers.length-mapY-1;
 			
@@ -113,15 +140,52 @@ public class GameWorld implements Updatable, Disposable {
 				int currID = mobileBarriers[mapY][x];
 				
 				if (currID != 0) {
-					System.out.println("creating new " + map.getTileProperty(currID, "barricadeType"));
+					// TODO: Fix the barricadeType loading
 					PhysicsProp prop = new PhysicsProp(x, y, b2dWorld, /*map.getTileProperty(currID, "barricadeType")*/ "0");
 					physicsProps.add(prop);
 				}
 			}
 		}
 		
-		// TODO: Debug code for viewing Box2d viewpoints
-		b2dDebug = new Box2DDebugRenderer(true, true, false);
+		// Add enemy turrets
+		int[][] enemies = map.layers.get(2).tiles;
+		
+		// Populate the world with PhysicsProps
+		for (int mapY=0; mapY<enemies.length; mapY++) {
+			// Find the y position where the map tile will ACTUALLY be rendered
+			int y = enemies.length-mapY-1;
+
+			for (int x=0; x<enemies[mapY].length; x++) {
+				int currID = enemies[mapY][x];
+
+				if (currID != 0) {
+					Turret turret = new Turret(x+.5f, y+.5f, this, player);
+					Updater.addUpdatable(turret);
+					units.add(turret);
+				}
+			}
+		}
+		
+		// Locate the goal
+		int[][] destinations = map.layers.get(4).tiles;
+
+		for (int mapY=0; mapY<destinations.length; mapY++) {
+			// Find the y position where the map tile will ACTUALLY be rendered
+			int y = destinations.length-mapY-1;
+
+			for (int x=0; x<destinations[mapY].length; x++) {
+				int currID = destinations[mapY][x];
+
+				if (currID != 0) {
+					goal = new Goal(x, y, this);
+					ContactManager.addContactListener(goal);
+				}
+			}
+		}
+		
+		// Debug code for viewing Box2d viewpoints
+		if (MainLoop.debug)
+			b2dDebug = new Box2DDebugRenderer(true, true, false);
 	}
 	
 	private void generateWorldBorder(float worldWidth, float worldHeight, float borderWidth, World world) {
@@ -160,9 +224,11 @@ public class GameWorld implements Updatable, Disposable {
 	
 	@Override
 	public void update(float delta) {
-		b2dWorld.step(delta, 3, 3); // TODO: Test without ever calling step - no physics is simulated
+		b2dWorld.step(delta, 3, 3);
+		EffectManager.update(delta);
 	}
 	
+	@Override
 	public void render() {
 		// Render the map
 		OrthographicCamera camera = manager.getCamera();
@@ -171,12 +237,26 @@ public class GameWorld implements Updatable, Disposable {
 		// Begin rendering other sprites on the screen
 		SpriteBatch batch = manager.getSpriteBatch();
 		batch.begin();
-		player.draw(batch);
+		// Draw the goal
+		goal.draw(batch);
+		
+		// Draw the bullets
+		for (Bullet b : bullets) {
+			b.draw(batch);
+		}
+		
+		// Draw the units
+		for (Unit u : units) {
+			u.draw(batch);
+		}
 		
 		// Draw the physics props
 		for (PhysicsProp p : physicsProps) {
 			p.draw(batch);
 		}
+		
+		// Draw the Particle Effects
+		EffectManager.render(batch);
 		batch.end();
 		
 		// Render the debug for the B2Dworld
@@ -190,8 +270,42 @@ public class GameWorld implements Updatable, Disposable {
 
 	@Override
 	public void dispose() {
+		// Clear the updatable list
+		Updater.clearUpdatables();
+		
+		// Clear Particle effects
+		EffectManager.clearEffects();
+		
+		// Dispose of all units
+		for (Unit u : units) {
+			Disposer.queueForDisposal(u);
+		}
+		
+		// Dispose of all bullets
+		for (Bullet b : bullets) {
+			Disposer.queueForDisposal(b);
+		}
+		
+		// Dispose of the map atlas
+		mapAtlas.dispose();
+		
+		// Dispose of the map renderer
+		mapRenderer.dispose();
+		
+		// Dispose of the b2dWorld
+		Disposer.queueForDisposal(b2dWorld);
+		if (b2dDebug != null)
+			b2dDebug.dispose();
+		
 		// Dispose of the cameramanager
 		manager.dispose();
+		
+		// Close Tutorial if it is still active
+		MainLoop.tutorial.hideTutorial();
+	}
+
+	public Player getPlayer() {
+		return player;
 	}
 
 }

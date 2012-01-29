@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><map height="30" orientation="orthogonal" tileheight="16" tilewidth="16" version="1.0" width="40"><properties><property name="blended tiles" value="5,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25"/></properties>
+ <tileset firstgid="1" name="tileset" spacing="1" tileheight="16" tilewidth="16">
+  <image height="85" source="tileset.png" width="85"/>
+  <tile id="10">
+   <properties>
+    <property name="barricadeType" value="0"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer height="30" name="Background" width="40">
+  <data compression="gzip" encoding="base64">
+   H4sIAAAAAAAAC+3XsQ0AIAgAQdD9d3YDY2MC4Yrvr/2MiJTUtl00Pj4+vsm+VcDBx1cxvhm+W3x8fH19L/183wNkuSGcwBIAAA==
+  </data>
+ </layer>
+ <layer height="30" name="Obsticles" width="40">
+  <data compression="gzip" encoding="base64">
+   H4sIAAAAAAAAC+2XMQoAIQwEU9z/32x7hBTKrkZhFgQ1MkwVYgQh5NV8l6zKJ1LNlcxcPf/v8LvPzxH8tLzkV/WhqjbTv9x+ea+yXMHPx8RPY+KnMdXedmLGUN51+p1m7WDip73r9uueXxysXX/OAd2KQSnAEgAA
+  </data>
+ </layer>
+ <layer height="30" name="Enemies" width="40">
+  <data compression="gzip" encoding="base64">
+   H4sIAAAAAAAAC+3WwQ0AIAgDQJZg/1WdwNDox5i7V+kCpQqAGx100w3wmg4yAJza7UnyW089f1rHHIsVwBIAAA==
+  </data>
+ </layer>
+ <layer height="30" name="PhysicsObjects" width="40">
+  <data compression="gzip" encoding="base64">
+   H4sIAAAAAAAAC+2XQQoAIQhF3Xv/+7YNKXKG0XlKbxNEof+nRSJ10KQ9VKK0dPLIUlFbxZwr4fGXdga0fKJQ4Wul50eng38rDR10RULwR81o53frMt+MOebqPnyS09d4fTvNZRARN0uLNw7pT0Dq779iker/8h5Cn1PqhlzTA4Jtzj/AEgAA
+  </data>
+ </layer>
+ <layer height="30" name="Destination" width="40">
+  <data compression="gzip" encoding="base64">
+   H4sIAAAAAAAAC+3OMQEAAAwCICPYP60Jdu+BBCRAvwMAAADAaZ3ik9bAEgAA
+  </data>
+ </layer>
+</map>
